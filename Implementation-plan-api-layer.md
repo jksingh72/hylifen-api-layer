@@ -85,9 +85,10 @@ Every new API = one new subfolder under `app/modules/`. Steps:
 - `get_db()` in `app/core/database.py` is the FastAPI session dependency
 - Alembic handles schema migrations (optional — can manage tables manually via psql/pgAdmin)
 
-### CORS
+### CORS & Network Access
 - `CORSMiddleware` allows origins defined in `ALLOWED_ORIGINS` env var
 - Default: `["http://localhost:3000"]` (the React frontend)
+- **Local Wi-Fi Testing:** Do not expose FastAPI to `0.0.0.0` or add phone IPs to CORS. Instead, the frontend uses a Vite Proxy (`server.proxy` in `vite.config.ts`) which securely forwards phone API requests to the `127.0.0.1` FastAPI backend.
 
 ---
 
@@ -104,6 +105,8 @@ Every new API = one new subfolder under `app/modules/`. Steps:
 | `sqlalchemy[asyncio]` | Async ORM |
 | `asyncpg` | Async PostgreSQL driver |
 | `alembic` | Database migrations |
+| `langchain` | LLM text prompt abstraction |
+| `langchain-openai` | OpenAI client |
 
 ---
 
@@ -123,6 +126,11 @@ ALLOWED_ORIGINS=["http://localhost:3000"]
 
 # Database
 DATABASE_URL=postgresql+asyncpg://postgres:your_password@localhost:5432/application
+
+# OpenAI / Gateway API
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_TEMPERATURE=0.7
 ```
 
 ---
@@ -136,14 +144,14 @@ cd c:\jksingh\apilayer
 uv sync
 
 # Start dev server (hot-reload)
-uv run uvicorn main:app --host 0.0.0.0 --port 4000 --reload
+uv run uvicorn main:app --port 4000 --reload
 ```
 
 | URL | Description |
 |---|---|
 | `http://localhost:4000/docs` | Swagger UI — interactive API tester |
 | `http://localhost:4000/api/v1/health` | Public liveness check |
-| `http://localhost:4000/api/v1/stocks/AAPL` | Stock price (mock data) |
+| `http://localhost:4000/api/v1/gateway/process` | Gateway LLM Endpoint |
 
 ---
 
@@ -152,6 +160,7 @@ uv run uvicorn main:app --host 0.0.0.0 --port 4000 --reload
 | Module | Endpoint | Auth | Description |
 |---|---|---|---|
 | Health | `GET /api/v1/health` | ❌ Public | Liveness check |
+| Gateway | `POST /api/v1/gateway/process` | ✅ Required | Sends text to OpenAI via LangChain |
 | Stocks | `GET /api/v1/stocks/{ticker}` | ✅ Required | Returns mock stock price |
 | Example | `GET /api/v1/example` | ✅ Required | Template stub |
 
