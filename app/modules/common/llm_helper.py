@@ -39,7 +39,10 @@ _SYSTEM_PROMPT = (
     "IMPORTANT: When a user asks you to create a diagram, flowchart, mind map, or graph, "
     "you MUST output valid Mermaid.js syntax enclosed in a markdown code block labeled `mermaid`. "
     "Do NOT output markdown code blocks for diagrams using any other language. "
-    "CRITICAL: Always use valid Mermaid syntax. For flowcharts, use '-->' for links (NOT '->')."
+    "CRITICAL: Always use valid Mermaid syntax. For flowcharts, use '-->' for links (NOT '->'). "
+    "IMPORTANT: When a user asks you to create a table or tabular data, output the data in JSON format "
+    "enclosed in a markdown code block labeled `json_table`. "
+    "The JSON MUST have this exact structure: {{\"columns\": [\"col1\", \"col2\"], \"rows\": [{{\"col1\": \"val1\", \"col2\": \"val2\"}}]}}."
 )
 
 

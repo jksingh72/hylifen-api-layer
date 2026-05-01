@@ -17,80 +17,40 @@ from __future__ import annotations
 import logging
 
 from app.core.config import settings
-from app.modules.gateway_api.helpers.llm_helper import LLMHelper, get_llm_helper
+
 from app.modules.gateway_api.models import GatewayRequest, GatewayResponse
 
 logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Prompt builder
-# ---------------------------------------------------------------------------
-
-def _build_user_prompt(request: GatewayRequest) -> str:
-    """
-    Construct the final user-facing prompt string from the caller's input.
-
-    The prompt is intentionally simple here — add few-shot examples,
-    chain-of-thought instructions, or output formatting directives below
-    as the product evolves.
-
-    Parameters
-    ----------
-    request:
-        The validated GatewayRequest object from the HTTP layer.
-
-    Returns
-    -------
-    str
-        Fully composed prompt ready to send to the LLM.
-    """
-    parts: list[str] = []
-
-    if request.context:
-        parts.append(f"[Context: {request.context.strip()}]")
-        parts.append("")  # blank line separator
-
-    parts.append(request.text.strip())
-
-    prompt = "\n".join(parts)
-    logger.debug("Built user prompt (len=%d): %s", len(prompt), prompt[:120])
-    return prompt
-
-
-# ---------------------------------------------------------------------------
 # Service function
 # ---------------------------------------------------------------------------
 
-async def process_text(request: GatewayRequest, helper: LLMHelper | None = None) -> GatewayResponse:
+async def process_text(request: GatewayRequest) -> GatewayResponse:
     """
-    Orchestrate the full text-in → LLM → text-out pipeline.
+    Orchestrate the full text-in → Orchestrator → text-out pipeline.
 
     Parameters
     ----------
     request:
         Validated GatewayRequest from the router.
-    helper:
-        Optional injected LLMHelper (defaults to module singleton).
-        Passing a custom helper makes unit-testing easy without patching globals.
 
     Returns
     -------
     GatewayResponse
         Contains the original input text, the AI output text, and the model name.
     """
-    if helper is None:
-        helper = get_llm_helper()
-
-    user_prompt = _build_user_prompt(request)
-
+    from app.modules.gateway_api.orchestrator import route_request
+    
     logger.info(
         "GatewayService.process_text | context=%s | text_len=%d",
         request.context,
         len(request.text),
     )
 
-    output_text = await helper.invoke(user_prompt)
+    # Hand off to the Orchestrator (Supervisor Agent)
+    output_text = await route_request(request.text, request.context)
 
     return GatewayResponse(
         input_text=request.text,
