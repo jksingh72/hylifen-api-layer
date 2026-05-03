@@ -35,6 +35,12 @@ class GatewayRequest(BaseModel):
         description="Optional domain context to narrow the LLM's focus.",
         examples=["physics", "finance", "healthcare"],
     )
+    session_id: str = Field(
+        default="default_session",
+        max_length=100,
+        description="Unique identifier for the user's conversation session to maintain memory.",
+        examples=["user_123_session"],
+    )
 
 
 class GatewayResponse(BaseModel):

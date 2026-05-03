@@ -50,7 +50,7 @@ async def process_text(request: GatewayRequest) -> GatewayResponse:
     )
 
     # Hand off to the Orchestrator (Supervisor Agent)
-    output_text = await route_request(request.text, request.context)
+    output_text = await route_request(request.text, request.context, request.session_id)
 
     return GatewayResponse(
         input_text=request.text,

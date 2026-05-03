@@ -60,7 +60,7 @@ Which agent should handle this request? Return ONLY the agent name.
 """
     return prompt.strip()
 
-async def route_request(text: str, context: str | None = None) -> str:
+async def route_request(text: str, context: str | None = None, session_id: str = "default_session") -> str:
     """
     Main entry point for the orchestrator.
     Routes the text to the correct domain agent and returns the result.
@@ -88,4 +88,4 @@ async def route_request(text: str, context: str | None = None) -> str:
     target_chain = AGENT_REGISTRY[chosen_agent]["chain"]
     
     # 3. Return the result
-    return await target_chain(text, context)
+    return await target_chain(text, context, session_id)
