@@ -12,8 +12,8 @@ Authentication is enforced via the shared get_current_user dependency
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import AuthenticatedUser, get_current_user
-from app.modules.gateway_api.models import GatewayRequest, GatewayResponse
-from app.modules.gateway_api.service import process_text
+from app.modules.baseApi.models import GatewayRequest, GatewayResponse
+from app.modules.baseApi.service import process_text
 
 router = APIRouter()
 

@@ -18,7 +18,7 @@ import logging
 
 from app.core.config import settings
 
-from app.modules.gateway_api.models import GatewayRequest, GatewayResponse
+from app.modules.baseApi.models import GatewayRequest, GatewayResponse
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ async def process_text(request: GatewayRequest) -> GatewayResponse:
     GatewayResponse
         Contains the original input text, the AI output text, and the model name.
     """
-    from app.modules.gateway_api.orchestrator import route_request
+    from app.modules.baseApi.orchestrator import route_request
     
     logger.info(
         "GatewayService.process_text | context=%s | text_len=%d",
