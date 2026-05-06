@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     # Server
     APP_ENV: str = "local"
+    HOST: str = "0.0.0.0"
     PORT: int = 4000
 
     # Auth
@@ -24,7 +25,8 @@ class Settings(BaseSettings):
     OPENAI_TEMPERATURE: float = 0.7
 
     # CORS — comma-separated in .env, e.g. http://localhost:3000,https://example.com
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
+    # Set to Any to handle string input like '*' or JSON-style input
+    ALLOWED_ORIGINS: Any = ["http://localhost:3000"]
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://your_user:your_password@localhost:5432/your_db_name"

@@ -13,19 +13,21 @@ logger = logging.getLogger(__name__)
 class FileChatRequest(BaseModel):
     text: str
     session_id: str
+    mode: str = "chat"
 
 @router.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
     session_id: str = Form(...),
-    text: str = Form("I have uploaded a new file.")
+    text: str = Form("I have uploaded a new file."),
+    mode: str = Form("chat")
 ):
     try:
-        logger.info(f"FileHandler.upload | filename={file.filename} | session={session_id}")
+        logger.info(f"FileHandler.upload | filename={file.filename} | session={session_id} | mode={mode}")
         file_path = await save_upload_file(file)
         logger.info(f"FileHandler.upload | saved_to={file_path}")
         
-        response = await process_file_upload(file_path, text, session_id)
+        response = await process_file_upload(file_path, text, session_id, mode=mode)
         return {"output_text": response}
     except Exception as e:
         logger.error(f"FileHandler.upload FAILED: {str(e)}", exc_info=True)
@@ -34,7 +36,7 @@ async def upload_file(
 @router.post("/chat")
 async def chat_with_files(request: FileChatRequest):
     try:
-        response = await handle_chat_request(request.text, request.session_id)
+        response = await handle_chat_request(request.text, request.session_id, mode=request.mode)
         return {"output_text": response}
     except Exception as e:
         logger.error(f"FileHandler.chat FAILED: {str(e)}", exc_info=True)
