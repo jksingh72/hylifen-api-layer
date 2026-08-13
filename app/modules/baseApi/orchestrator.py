@@ -16,6 +16,8 @@ from app.modules.common.llm_helper import get_llm_helper
 from app.modules.general.agent import general_agent_chain
 from app.modules.hr.agent import hr_agent_chain
 from app.modules.stocks.agent import stocks_agent_chain
+from app.modules.ocrtext.agent import ocrtext_orchestrator_chain
+from app.modules.readbook.agent import readbook_agent_chain
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,14 @@ AGENT_REGISTRY = {
     "hr_agent": {
         "description": "Use this agent for questions about Human Resources, employee policies, or organizational structure.",
         "chain": hr_agent_chain
+    },
+    "ocrtext_agent": {
+        "description": "Use this agent when the user wants to transcribe, extract text from, or perform OCR on uploaded document files (like PDFs, images, or handwriting).",
+        "chain": ocrtext_orchestrator_chain
+    },
+    "readbook_agent": {
+        "description": "Use this agent for questions about books, reading materials, document summaries, or when asking questions about a book/reader in the readbook module.",
+        "chain": readbook_agent_chain
     },
     "general_agent": {
         "description": "Use this agent for general chat, coding help, or any topic that doesn't fit a specific domain.",
@@ -68,19 +78,22 @@ async def route_request(text: str, context: str | None = None, session_id: str =
     helper = get_llm_helper()
     
     # 1. Decide the route
-    # (In a production system, we'd use the LLM's structured output / tool calling here.
-    # For now, we'll ask the LLM and clean the response).
-    router_prompt = _build_router_prompt(text)
-    
-    logger.info("Orchestrator: Deciding route for text length %d", len(text))
-    decision_text = await helper.invoke(router_prompt)
-    
-    # Simple extraction (assuming LLM follows instructions)
     chosen_agent = "general_agent" # default fallback
-    for name in AGENT_REGISTRY.keys():
-        if name.lower() in decision_text.lower():
-            chosen_agent = name
-            break
+    
+    if context and context.lower() == "readbook":
+        logger.info("Orchestrator: Bypassing dynamic routing for context '%s' -> readbook_agent", context)
+        chosen_agent = "readbook_agent"
+    else:
+        # Ask the LLM to decide the agent
+        router_prompt = _build_router_prompt(text)
+        logger.info("Orchestrator: Deciding route for text length %d", len(text))
+        decision_text = await helper.invoke(router_prompt)
+        
+        # Simple extraction
+        for name in AGENT_REGISTRY.keys():
+            if name.lower() in decision_text.lower():
+                chosen_agent = name
+                break
             
     logger.info("Orchestrator: Selected agent -> %s", chosen_agent)
     
@@ -89,3 +102,4 @@ async def route_request(text: str, context: str | None = None, session_id: str =
     
     # 3. Return the result
     return await target_chain(text, context, session_id)
+

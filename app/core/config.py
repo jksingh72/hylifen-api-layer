@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_TEMPERATURE: float = 0.7
 
+    # Claude Agent SDK (rfp module only)
+    ANTHROPIC_API_KEY: str = ""
+
     # CORS — comma-separated in .env, e.g. http://localhost:3000,https://example.com
     # Set to Any to handle string input like '*' or JSON-style input
     ALLOWED_ORIGINS: Any = ["http://localhost:3000"]

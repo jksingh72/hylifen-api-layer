@@ -17,7 +17,7 @@ cp .env.example .env
 uv sync
 
 # 3. Start the dev server (hot-reload enabled)
-uv run dev
+uv run python main.py
 ```
 
 The API will be available at: **http://localhost:4000**

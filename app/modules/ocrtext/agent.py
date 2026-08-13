@@ -53,3 +53,20 @@ async def ocrtext_agent_chain(file_paths: List[str], text: str, session_id: str)
         import logging
         logging.error(f"OCR Agent Execution failed: {e}")
         return f"Error during transcription: {e}"
+
+
+async def ocrtext_orchestrator_chain(text: str, context: str | None = None, session_id: str = "default_session") -> str:
+    """
+    Adapter for the main orchestrator. Fetches uploaded files dynamically 
+    using session_id and invokes the OCR agent.
+    """
+    from app.modules.filehandler.orchestrator import get_session_files
+    
+    file_paths = get_session_files(session_id)
+    if not file_paths:
+        return (
+            "I don't see any files uploaded for this session. "
+            "Please upload one first so I can perform OCR or transcription on it."
+        )
+        
+    return await ocrtext_agent_chain(file_paths, text, session_id)

@@ -14,5 +14,12 @@ setup_middleware(app)
 app.include_router(api_v1_router, prefix="/api/v1")
 
 if __name__ == "__main__":
+    import sys
     import uvicorn
-    uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=True)
+
+    # uvicorn's reload mode forces the Selector event loop on Windows, which
+    # cannot spawn subprocesses — breaking the rfp module's Claude Agent SDK
+    # calls (it spawns the Claude Code CLI as a subprocess). Reload is disabled
+    # on Windows so that loop stays Proactor; other platforms keep hot-reload.
+    reload_enabled = sys.platform != "win32"
+    uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=reload_enabled)
